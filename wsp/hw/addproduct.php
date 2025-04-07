@@ -1,6 +1,7 @@
 <?php
 
 @include 'config.php';
+
 if (isset($_POST['add_product'])) {
     $product_name = htmlspecialchars(trim($_POST['product_name']));
     $product_price = htmlspecialchars(trim($_POST['product_price']));
@@ -15,18 +16,19 @@ if (isset($_POST['add_product'])) {
     } elseif (!is_numeric($product_price) || $product_price <= 0) {
         echo "<script>alert('Please enter a valid price');</script>";
     } else {
-        // Kiểm tra định dạng file ảnh
+        // Kiểm tra xem file ảnh có hợp lệ không
         $allowed_extensions = ['jpg', 'jpeg', 'png'];
         $file_extension = strtolower(pathinfo($product_image, PATHINFO_EXTENSION));
 
         if (!in_array($file_extension, $allowed_extensions)) {
             echo "<script>alert('Only JPG, JPEG, and PNG files are allowed');</script>";
         } else {
-            // Chuẩn bị câu lệnh SQL với đúng số lượng giá trị
-            $stmt = $con->prepare("INSERT INTO products (name, price, quaty, image) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("sdis", $product_name, $product_price, $product_quaty, $product_image);
+            // Chuẩn bị câu lệnh SQL
+            $stmt = $con->prepare("INSERT INTO products (name, price,quaty, image) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $product_name, $product_price, $product_quaty, $product_image);
 
             if ($stmt->execute()) {
+                // Di chuyển file ảnh vào thư mục
                 if (move_uploaded_file($product_image_tmp_name, $product_image_folder)) {
                     echo "<script>alert('Product added successfully');</script>";
                     echo "<script>window.location.href = 'index.php';</script>";
@@ -35,34 +37,6 @@ if (isset($_POST['add_product'])) {
                 }
             } else {
                 echo "<script>alert('Failed to add product');</script>";
-            }
-            $stmt->close();
-        }
-        // Display delete button for each product
-        $result = $con->query("SELECT * FROM products");
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo "<div>";
-                echo "<p>Product: " . htmlspecialchars($row['name']) . " - Price: " . htmlspecialchars($row['price']) . "</p>";
-                echo "<form method='post' action=''>";
-                echo "<input type='hidden' name='delete_product_id' value='" . htmlspecialchars($row['id']) . "'>";
-                echo "<input type='submit' name='delete_product' value='Delete' class='btn'>";
-                echo "</form>";
-                echo "</div>";
-            }
-        }
-
-        // Handle delete product request
-        if (isset($_POST['delete_product'])) {
-            $delete_product_id = intval($_POST['delete_product_id']);
-            $stmt = $con->prepare("DELETE FROM products WHERE id = ?");
-            $stmt->bind_param("i", $delete_product_id);
-
-            if ($stmt->execute()) {
-                echo "<script>alert('Product deleted successfully');</script>";
-                echo "<script>window.location.href = 'addproduct.php';</script>";
-            } else {
-                echo "<script>alert('Failed to delete product');</script>";
             }
             $stmt->close();
         }

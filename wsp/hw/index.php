@@ -178,7 +178,7 @@ if ($conn->connect_error) {
             </div>
             <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == 1): ?>
                 <div>
-                    <p><a href="addproduct.php">Add Products</a></p>
+                    <p><a href="managerProdut.php">Product managerment</a></p>
                 </div>
                 <div>
                     <p><a href="user.php">User Management</a></p>
